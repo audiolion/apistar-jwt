@@ -1,12 +1,10 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """Tests for `apistar_jwt` package."""
 
 import pytest
 
 
-from apistar_jwt import apistar_jwt
+# from apistar_jwt import token
 
 
 @pytest.fixture
