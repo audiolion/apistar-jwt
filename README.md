@@ -23,11 +23,48 @@ $ pip install apistar-jwt
 
 ## Usage
 
+To encrypt and decrpyt tokens you must set the include the following setting under your apistar settings.
+
+```python
+settings = {
+  'JWT': {
+    # do not check your secret into version control!
+    'SECRET': 'QXp4Z83.%2F@JBiaPZ8T9YDwoasn[dn)cZ=fE}KqHMJPNka3QyPNq^KnMqL$oCsU9BC?.f9,oF2.2t4oN?[g%iq89(+'
+  }
+}
+```
+
 The JWT Component provided can be used as an injected component in a function or through the API Star Authentication Interface.
 
 ### Authentication
 
 Annotate any routes where you want to use JWT Authentication.
+
+```python
+from apistar import annotate
+from apistar.interfaces import Auth
+from apistar_jwt.authentication import JWTAuthentication
+
+
+@annotate(authentication=[JWTAuthentication()])
+def auth_route(auth: Auth):
+    # user is authenticated if it reaches here
+
+    # get user data
+    auth.user
+
+    # get token
+    auth.token
+
+    # always returns true
+    auth.is_authenticated()
+
+    # get username from either
+    auth.get_user_id()
+    auth.get_display_name()
+```
+
+If you need to access the tokens payload you can decrypt the token inside the route.
 
 ```python
 from apistar import annotate
@@ -38,18 +75,7 @@ from apistar_jwt.token import JWT
 
 
 @annotate(authentication=[JWTAuthentication()])
-def display_user(auth: Auth, settings: Settings):
-    # There are no required permissions set on this handler, so all requests
-    # will be allowed.
-    # Requests that have successfully authenticated using jwt authentication
-    # will include user credentials in `auth`.
-
-    # get user data
-    auth.user
-
-    # get token
-    auth.token
-
+def access_jwt_payload_route(auth: Auth, settings: Settings):
     # get payload from token
     token = JWT(token=auth.token, settings=settings)
     token.payload
@@ -111,4 +137,126 @@ def auth_required_endpoint(request: http.Request, token: JWT):
       'username': username,
       'other_data': other_data_you_put_in_payload,
     }
+```
+
+### Settings
+
+There are two settings this package uses to identify the `username` and `user_id` keys in the JWT payload, they are by default
+
+```python
+settings = {
+  'JWT': {
+    'USERNAME': 'username',
+    'ID': 'id',
+  }
+}
+```
+
+If your JWT uses some other kind of key, copy these keys into your settings and set the correct key values.
+
+`ID` is not required, but available if you would like to include a different id field in your JWT payload.
+
+#### Other JWT Settings
+
+`ALGORITHMS` is related to the algorithms used for decoding JWTs. By default we only use 'HS256' but JWT supports passing an array of [supported algorithms](https://pyjwt.readthedocs.io/en/latest/algorithms.html#digital-signature-algorithms) which it will sequentially try when attempting to decode.
+
+```python
+settings = {
+  'JWT': {
+    'ALGORITHMS': ['HS256', ],
+  }
+}
+```
+
+`SECRET` is a long, randomized, secret key that should never be checked into version control.
+
+```python
+settings = {
+  'JWT': {
+    'SECRET': 'QXp4Z83.%2F@JBiaPZ8T9YDwoasn[dn)cZ=fE}KqHMJPNka3QyPNq^KnMqL$oCsU9BC?.f9,oF2.2t4oN?[g%iq89(+'
+  }
+}
+```
+
+`ISSUER` is the urn for which JWT's should be accepted from. [Read more about issueer claim](https://pyjwt.readthedocs.io/en/latest/usage.html#issuer-claim-iss).
+
+```python
+settings = {
+  'JWT': {
+    'ISSUER': 'urn:foo'
+  }
+}
+```
+
+`AUDIENCE` is the urn for this applications audience, it must match a value in the `aud` key of the payload. [Read more about issueer claim](https://pyjwt.readthedocs.io/en/latest/usage.html#audience-claim-aud).
+
+```python
+settings = {
+  'JWT': {
+    'AUDIENCE': 'urn:bar'
+  }
+}
+```
+
+`LEEWAY` is the number of seconds of margin an expiration time claim in the past will still be valid for.
+
+```python
+settings = {
+  'JWT': {
+    'LEEWAY': 10
+  }
+}
+```
+
+### Encoding JWTs
+
+As a convenience, we provide a simple `encode` method to create JWTs, if you need more advanced JWT encodings, please [visit the PyJWT docs](https://pyjwt.readthedocs.io/en/latest/usage.html#usage-examples).
+
+```python
+from apistar.types import Settings
+from apistar_jwt.tokens import JWT
+
+
+def encrypt_payload(request: http.Request, settings: Settings):
+    SECRET = settings['JWT'].get('SECRET')
+    payload = {'email': 'test@example.com'}
+
+    # algorithm for encoding defaults to HS256
+    token = JWT.encode(payload, secret=SECRET)
+
+    # use the algorithm keyword to pass a specific algorithm
+    token = JWT.encode(payload, secret=SECRET, algorithm='RS512')
+
+    return {'token': token}
+```
+
+You may pass [valid claim names](https://pyjwt.readthedocs.io/en/latest/usage.html#registered-claim-names) or other valid kwargs to `JWT.encode()`. These claims help with your JWT's security. The following example demonstrates using all the claims, but they are all optional and the values provided for the claims in the example are arbitrary.
+
+```python
+import datetime
+
+from apistar.types import Settings
+from apistar_jwt.tokens import JWT
+
+
+def encrypt_payload(request: http.Request, settings: Settings):
+    SECRET = settings['JWT'].get('SECRET')
+    payload = {
+        'email': 'test@example.com',
+        'iss': 'urn:foo',  # only accept jwt from this issuer
+        'aud': ['urn:foo', 'urn:bar', 'urn:baz']  # only these audiences can decrpyt
+        'iat': datetime.utcnow()  # issued at to know time JWT was issued
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=30),  # expiration time
+        'nbf': datetime.utcnow(),  # not before time
+    }
+
+    # you may also pass optional kwargs like headers to the encode method
+    token = JWT.encode(
+        payload,
+        secret=SECRET,
+        algorithm='RS512',
+        headers={'kid': '230498151c214b788dd97f22b85410a5'},
+    )
+
+    return {'token': token}
 ```
