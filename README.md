@@ -212,7 +212,7 @@ As a convenience, we provide a simple `encode` method to create JWTs, if you nee
 
 ```python
 from apistar.types import Settings
-from apistar_jwt.tokens import JWT
+from apistar_jwt.token import JWT
 
 
 def encrypt_payload(request: http.Request, settings: Settings):
@@ -234,7 +234,7 @@ You may pass [valid claim names](https://pyjwt.readthedocs.io/en/latest/usage.ht
 import datetime
 
 from apistar.types import Settings
-from apistar_jwt.tokens import JWT
+from apistar_jwt.token import JWT
 
 
 def encrypt_payload(request: http.Request, settings: Settings):

@@ -7,4 +7,8 @@ htmlcov/
 .coverage.*
 coverage.xml
 
+build/
+dist/
+*.egg-info/
+
 .python-version
