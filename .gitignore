@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+
+.cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+.python-version
