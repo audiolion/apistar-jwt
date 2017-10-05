@@ -2,6 +2,8 @@ from apistar.exceptions import ConfigurationError
 from apistar.types import Settings
 import jwt
 
+from .exceptions import AuthenticationFailed
+
 
 class JWT():
     def __init__(self, settings: Settings, token=None, issuer=None, audience=None, leeway=None):
@@ -27,6 +29,7 @@ class JWT():
                 self.token, self.secret, algorithms=self.algorithms, **kwargs)
         except Exception:
             self.payload = None
+            raise AuthenticationFailed()
 
     @staticmethod
     def encode(payload, secret=None, algorithm=None, **kwargs):
