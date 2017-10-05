@@ -127,7 +127,7 @@ from apistar import exceptions
 from apistar_jwt.token import JWT
 
 def auth_required_endpoint(request: http.Request, token: JWT):
-    if token is None:
+    if token.payload is None:
       raise exceptions.Forbidden()
     username = token.payload.get('username', '')
     other_data_you_put_in_payload = token.payload.get('other_data', '')
@@ -176,7 +176,7 @@ settings = {
 }
 ```
 
-`ISSUER` is the urn for which JWT's should be accepted from. [Read more about issueer claim](https://pyjwt.readthedocs.io/en/latest/usage.html#issuer-claim-iss).
+`ISSUER` is the urn for which JWT's should be accepted from. [Read more about issuer claim](https://pyjwt.readthedocs.io/en/latest/usage.html#issuer-claim-iss).
 
 ```python
 settings = {
