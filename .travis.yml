@@ -1,11 +1,18 @@
+sudo: false
 language: python
-python:
-  - 3.6
-  - 3.5
+matrix:
+  include:
+    - os: linux
+      python: 3.5
+      env: TOX_ENV=py35
+    - os: linux
+      python: 3.6
+      env: TOX_ENV=py36
+    - os: linux
+      python: 3.6
+      env: TOX_ENV=flake8
 
 install:
-  - "pip install -e . --upgrade"
-  - "pipenv install --dev"
+  - pip install tox
 
-script:
-  - "pipenv run pytest tests"
+script: tox -e $TOX_ENV
