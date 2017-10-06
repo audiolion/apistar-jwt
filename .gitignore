@@ -10,5 +10,10 @@ coverage.xml
 build/
 dist/
 *.egg-info/
+.eggs
+.tox
 
 .python-version
+
+# Vim
+*.sw*
