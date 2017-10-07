@@ -17,3 +17,6 @@ dist/
 
 # Vim
 *.sw*
+
+# Sublime
+*.sublime-*
