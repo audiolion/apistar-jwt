@@ -47,25 +47,25 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 
 lint: ## check style with flake8
-	flake8 apistar_jwt tests
+	pipenv run flake8 apistar_jwt tests
 
 test: ## run tests quickly with the default Python
-	pytest tests
+	pipenv run pytest
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source apistar_jwt -m pytest
-	coverage report -m
-	coverage html
+	pipenv run coverage run --source apistar_jwt -m pytest
+	pipenv run coverage report -m
+	pipenv run coverage html
 	$(BROWSER) htmlcov/index.html
 
 release: clean ## package and upload a release
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
+	pipenv run python setup.py sdist upload
+	pipenv run python setup.py bdist_wheel upload
 
 dist: clean ## builds source and wheel package
-	python setup.py sdist
-	python setup.py bdist_wheel
+	pipenv run python setup.py sdist
+	pipenv run python setup.py bdist_wheel
 	ls -l dist
 
 install: clean ## install the package to the active Python's site-packages
-	python setup.py install
+	pipenv run python setup.py install
