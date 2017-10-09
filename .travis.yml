@@ -15,4 +15,6 @@ matrix:
 install:
   - pip install tox
 
-script: tox -e $TOX_ENV
+script:
+  - tox -e $TOX_ENV
+  - coverage report -m
