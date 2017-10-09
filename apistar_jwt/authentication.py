@@ -21,7 +21,7 @@ def get_jwt(authorization: http.Header, settings: Settings):
 class JWTAuthentication():
     def authenticate(self, authorization: http.Header, settings: Settings):
         jwt = get_jwt(authorization, settings)
-        if jwt.payload is None:
+        if jwt.payload == {}:
             raise AuthenticationFailed()
         jwt_settings = settings.get('JWT', {})
         uid = jwt.payload.get(jwt_settings.get('ID', 'id'), '')
