@@ -119,7 +119,7 @@ def echo_jwt_payload(request: http.Request, token: JWT):
 
 ```
 
-Note that you have to do your own authentication check using this method.
+Note that you have to do your own authentication check using this method. The payload will be returned as it was encoded and won't respect the `JWT` settings for `USERNAME` and `ID` as they correlate with the `Auth` interface which is not utilized when using `JWT` as an injected component.
 
 ```python
 from apistar import http
