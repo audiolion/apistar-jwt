@@ -32,7 +32,12 @@ settings = {
 }
 ```
 
-The JWT Component provided can be used as an injected component in a function or through the API Star Authentication Interface.
+The JWT Component provided can be used as an injected component in a function or through the API Star Authentication Interface. No matter which method you choose to use, the token must be passed as an `Authorization` header using the `Bearer` scheme in requests made to a resource.
+
+```shell
+$ curl -i -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxfQ.fCqeAJGHYwZ9y-hJ3CKUWPiENOM0xtGsMeUWmIq4o8Q" http://localhost:8080/some-resource-requiring-jwt
+```
+
 
 ### Authentication
 
