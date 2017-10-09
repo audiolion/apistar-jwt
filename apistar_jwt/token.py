@@ -19,11 +19,11 @@ class JWT():
         self.leeway = leeway if leeway is not None else jwt_settings.get('LEEWAY', None)
         try:
             kwargs = {}
-            if issuer:
+            if self.issuer:
                 kwargs.update({'issuer': self.issuer})
-            if audience:
+            if self.audience:
                 kwargs.update({'audience': self.audience})
-            if leeway:
+            if self.leeway:
                 kwargs.update({'leeway': self.leeway})
             self.payload = jwt.decode(
                 self.token, self.secret, algorithms=self.algorithms, **kwargs)

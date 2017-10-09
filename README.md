@@ -32,7 +32,12 @@ settings = {
 }
 ```
 
-The JWT Component provided can be used as an injected component in a function or through the API Star Authentication Interface.
+The JWT Component provided can be used as an injected component in a function or through the API Star Authentication Interface. No matter which method you choose to use, the token must be passed as an `Authorization` header using the `Bearer` scheme in requests made to a resource.
+
+```shell
+$ curl -i -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxfQ.fCqeAJGHYwZ9y-hJ3CKUWPiENOM0xtGsMeUWmIq4o8Q" http://localhost:8080/some-resource-requiring-jwt
+```
+
 
 ### Authentication
 
@@ -119,7 +124,7 @@ def echo_jwt_payload(request: http.Request, token: JWT):
 
 ```
 
-Note that you have to do your own authentication check using this method.
+Note that you have to do your own authentication check using this method. The payload will be returned as it was encoded and won't respect the `JWT` settings for `USERNAME` and `ID` as they correlate with the `Auth` interface which is not utilized when using `JWT` as an injected component.
 
 ```python
 from apistar import http

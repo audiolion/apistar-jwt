@@ -13,6 +13,10 @@ matrix:
       env: TOX_ENV=flake8
 
 install:
-  - pip install tox
+  - pip install tox coverage codecov
 
-script: tox -e $TOX_ENV
+script:
+  - tox -e $TOX_ENV
+
+after_success:
+  - codecov
