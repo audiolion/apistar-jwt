@@ -1,6 +1,6 @@
 # apistar-jwt
 
-[![pypi](https://img.shields.io/pypi/v/apistar_jwt.svg)](https://pypi.python.org/pypi/apistar_jwt) [![travis](https://img.shields.io/travis/audiolion/apistar_jwt.svg)](https://travis-ci.org/audiolion/apistar_jwt)
+[![pypi](https://img.shields.io/pypi/v/apistar_jwt.svg)](https://pypi.python.org/pypi/apistar_jwt) [![travis](https://img.shields.io/travis/audiolion/apistar_jwt.svg)](https://travis-ci.org/audiolion/apistar_jwt) [![codecov](https://codecov.io/gh/audiolion/apistar-jwt/branch/master/graph/badge.svg)](https://codecov.io/gh/audiolion/apistar-jwt)
 
 
 JSON Web Token Component for use with API Star. Provides JWTAuthenticate class for JWT Authentication.
