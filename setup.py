@@ -32,7 +32,7 @@ setup(
     long_description=readme + '\n\n' + history,
     author="Ryan Castner",
     author_email='castner.rr@gmail.com',
-    url='https://github.com/audiolion/apistar_jwt',
+    url='https://github.com/audiolion/apistar-jwt',
     packages=find_packages(include=['apistar_jwt']),
     include_package_data=True,
     install_requires=requirements,
