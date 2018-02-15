@@ -1,11 +1,13 @@
-from apistar import Include, Route
+from apistar import annotate, Include, Route
+from apistar.exceptions import Forbidden
 from apistar.frameworks.wsgi import WSGIApp as App
 from apistar.handlers import docs_urls, static_urls
+from apistar.permissions import IsAuthenticated
+from apistar.types import Settings
+
 from apistar_jwt.authentication import JWTAuthentication
 from apistar_jwt.token import JWT
-from apistar.permissions import IsAuthenticated
-from apistar import annotate
-from apistar.exceptions import Forbidden
+
 import datetime
 
 
@@ -19,9 +21,10 @@ def welcome(name=None):
 USER = {'user': 'test', 'pwd': 'pwd'}
 
 
-#login should be authenticated
+# we override the default Authentication and Permissions policy to allow login
 @annotate(authentication=[], permissions=[])
-def login(user: str, pwd: str) -> dict:
+def login(user: str, pwd: str, settings: Settings) -> dict:
+    # do some check with your database here to see if the user is authenticated
     if user != USER['user'] or pwd != USER['pwd']:
         raise Forbidden('invalid credentials')
     SECRET = settings['JWT'].get('SECRET')
@@ -32,7 +35,6 @@ def login(user: str, pwd: str) -> dict:
         datetime.timedelta(minutes=60)  #  ends in 60 minutes
     }
     token = JWT.encode(payload, secret=SECRET)
-
     return {'token': token}
 
 
