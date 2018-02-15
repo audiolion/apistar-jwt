@@ -236,7 +236,7 @@ def encrypt_payload(request: http.Request, settings: Settings):
 You may pass [valid claim names](https://pyjwt.readthedocs.io/en/latest/usage.html#registered-claim-names) or other valid kwargs to `JWT.encode()`. These claims help with your JWT's security. The following example demonstrates using all the claims, but they are all optional and the values provided for the claims in the example are arbitrary.
 
 ```python
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from apistar.types import Settings
 from apistar_jwt.token import JWT
@@ -249,7 +249,7 @@ def encrypt_payload(request: http.Request, settings: Settings):
         'iss': 'urn:foo',  # only accept jwt from this issuer
         'aud': ['urn:foo', 'urn:bar', 'urn:baz']  # only these audiences can decrpyt
         'iat': datetime.utcnow()  # issued at to know time JWT was issued
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=30),  # expiration time
+        'exp': datetime.utcnow() + timedelta(seconds=30),  # expiration time
         'nbf': datetime.utcnow(),  # not before time
     }
 
