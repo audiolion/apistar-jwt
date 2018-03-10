@@ -9,12 +9,16 @@ from apistar import Component, Route, Settings, TestClient, exceptions, http, an
 from apistar.interfaces import Auth
 from apistar.frameworks.asyncio import ASyncIOApp
 from apistar.frameworks.wsgi import WSGIApp
+from apistar.permissions import IsAuthenticated
 from apistar_jwt.authentication import JWTAuthentication, get_jwt
 from apistar_jwt.token import JWT
 
 
 # Test Routes
-@annotate(authentication=[JWTAuthentication()])
+@annotate(
+    authentication=[JWTAuthentication()],
+    permissions=[IsAuthenticated()],
+)
 def auth_required(request: http.Request, auth: Auth):
     return auth.user
 
@@ -40,7 +44,7 @@ def test_jwt_as_auth(app_class) -> None:
     client = TestClient(app)
 
     response = client.get('/auth-required-route')
-    assert response.status_code == 401
+    assert response.status_code == 403
 
     payload = {'user': 1, 'username': 'bailey'}
     secret = settings['JWT']['SECRET']
@@ -49,12 +53,12 @@ def test_jwt_as_auth(app_class) -> None:
     response = client.get('/auth-required-route', headers={
         'Authorization': 'Bearer',
     })
-    assert response.status_code == 401
+    assert response.status_code == 403
 
     response = client.get('/auth-required-route', headers={
         'Authorization': 'Basic username',
     })
-    assert response.status_code == 401
+    assert response.status_code == 403
 
     response = client.get('/auth-required-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
@@ -66,28 +70,28 @@ def test_jwt_as_auth(app_class) -> None:
     response = client.get('/auth-required-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
     })
-    assert response.status_code == 401
+    assert response.status_code == 403
 
     # wrong secret
     encoded_jwt = jwt.encode(payload, 'wrong secret', algorithm='HS256').decode(encoding='UTF-8')
     response = client.get('/auth-required-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
     })
-    assert response.status_code == 401
+    assert response.status_code == 403
 
     # wrong algorithm
     encoded_jwt = jwt.encode(payload, secret, algorithm='HS512').decode(encoding='UTF-8')
     response = client.get('/auth-required-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
     })
-    assert response.status_code == 401
+    assert response.status_code == 403
 
     # empty payload causes auth to fail
     encoded_jwt = jwt.encode({}, secret, algorithm='HS256').decode(encoding='UTF-8')
     response = client.get('/auth-required-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
     })
-    assert response.status_code == 401
+    assert response.status_code == 403
 
 
 @pytest.mark.parametrize('app_class', [WSGIApp, ASyncIOApp])
@@ -134,7 +138,7 @@ def test_jwt_issuer_claim(app_class) -> None:
     response = client.get('/auth-required-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
     })
-    assert response.status_code == 401
+    assert response.status_code == 403
 
     response = client.get('/as-a-component-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
@@ -147,7 +151,7 @@ def test_jwt_issuer_claim(app_class) -> None:
     response = client.get('/auth-required-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
     })
-    assert response.status_code == 401
+    assert response.status_code == 403
 
     response = client.get('/as-a-component-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
@@ -214,7 +218,7 @@ def test_jwt_audience_claim(app_class) -> None:
     response = client.get('/auth-required-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
     })
-    assert response.status_code == 401
+    assert response.status_code == 403
 
     response = client.get('/as-a-component-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
@@ -227,7 +231,7 @@ def test_jwt_audience_claim(app_class) -> None:
     response = client.get('/auth-required-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
     })
-    assert response.status_code == 401
+    assert response.status_code == 403
 
     response = client.get('/as-a-component-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
@@ -240,7 +244,7 @@ def test_jwt_audience_claim(app_class) -> None:
     response = client.get('/auth-required-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
     })
-    assert response.status_code == 401
+    assert response.status_code == 403
 
     response = client.get('/as-a-component-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
@@ -292,7 +296,7 @@ def test_jwt_leeway_claim(app_class) -> None:
     response = client.get('/auth-required-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
     })
-    assert response.status_code == 401
+    assert response.status_code == 403
 
     response = client.get('/as-a-component-route', headers={
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
