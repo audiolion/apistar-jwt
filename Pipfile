@@ -20,7 +20,8 @@ coverage = "*"
 cryptography = "*"
 pyyaml = "*"
 pytest = "*"
-"pytest-runner" = "*"
+pytest-runner = "*"
+pytest-cov = "*"
 
 
 [requires]
