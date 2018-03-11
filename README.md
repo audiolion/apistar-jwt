@@ -279,7 +279,7 @@ pipenv shell
 pytest
 ```
 
-This project uses [Coveralls](https://docs.travis-ci.com/user/coveralls/) to enforce code coverage on all pull requests.  To run tests locally and output a code coverage report, run:
+This project uses [Codecov](https://codecov.io/gh/audiolion/apistar-jwt) to enforce code coverage on all pull requests.  To run tests locally and output a code coverage report, run:
 
 ```
 pipenv shell
