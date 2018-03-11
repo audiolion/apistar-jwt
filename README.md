@@ -263,3 +263,9 @@ def encrypt_payload(request: http.Request, settings: Settings):
 
     return {'token': token}
 ```
+
+## Developing
+
+This project uses [`pipenv`](https://docs.pipenv.org) to manage its development environment, and [`pytest`](https://docs.pytest.org) as its tests runner.  Make sure to use `pipenv install --dev` flag to install development dependencies, and activate your development environment with `pipenv shell`  in order to run `pytest`.
+
+Pull requests should maintain test code coverage.  To show code coverage in your development environment, run `pytest --cov=apistar_test/`.
