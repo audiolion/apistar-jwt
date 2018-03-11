@@ -4,6 +4,7 @@
 import jwt
 import pytest
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from apistar import Component, Route, Settings, TestClient, exceptions, http, annotate
 from apistar.interfaces import Auth
@@ -92,6 +93,14 @@ def test_jwt_as_auth(app_class) -> None:
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
     })
     assert response.status_code == 403
+
+    # Missing SECRET causes configuration error to bubble up
+    encoded_jwt = jwt.encode(payload, secret, algorithm='HS256').decode(encoding='UTF-8')
+    with patch.dict(settings['JWT'], {'SECRET': None}), \
+         pytest.raises(exceptions.ConfigurationError):
+        client.get('/auth-required-route', headers={
+            'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
+        })
 
 
 @pytest.mark.parametrize('app_class', [WSGIApp, ASyncIOApp])
