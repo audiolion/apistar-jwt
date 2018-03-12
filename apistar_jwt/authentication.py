@@ -1,5 +1,6 @@
 from apistar import http
 from apistar.authentication import Authenticated
+from apistar.exceptions import ConfigurationError
 from apistar.types import Settings
 
 from .exceptions import AuthenticationFailed
@@ -20,9 +21,16 @@ def get_jwt(authorization: http.Header, settings: Settings):
 
 class JWTAuthentication():
     def authenticate(self, authorization: http.Header, settings: Settings):
-        jwt = get_jwt(authorization, settings)
+        try:
+            jwt = get_jwt(authorization, settings)
+        except ConfigurationError:
+            raise
+        except AuthenticationFailed:
+            return None
+
         if jwt.payload == {}:
-            raise AuthenticationFailed()
+            return None
+
         jwt_settings = settings.get('JWT', {})
         uid = jwt.payload.get(jwt_settings.get('ID', 'id'), '')
         username = jwt.payload.get(jwt_settings.get('USERNAME', 'username'), '')
