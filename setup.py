@@ -28,7 +28,7 @@ test_requirements = [
 
 setup(
     name='apistar_jwt',
-    version='0.2.1',
+    version='0.3.0',
     description="A JSON Web Token Component for API Star",
     long_description=readme + '\n\n' + history,
     author="Ryan Castner",
