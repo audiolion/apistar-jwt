@@ -263,3 +263,25 @@ def encrypt_payload(request: http.Request, settings: Settings):
 
     return {'token': token}
 ```
+
+## Developing
+
+This project uses [`pipenv`](https://docs.pipenv.org) to manage its development environment, and [`pytest`](https://docs.pytest.org) as its tests runner.  To install development dependencies:
+
+```
+pipenv install --dev
+```
+
+To run tests:
+
+```
+pipenv shell
+pytest
+```
+
+This project uses [Codecov](https://codecov.io/gh/audiolion/apistar-jwt) to enforce code coverage on all pull requests.  To run tests locally and output a code coverage report, run:
+
+```
+pipenv shell
+pytest --cov=apistar_test/
+```
