@@ -1,45 +1,90 @@
+import logging
+import os
+from typing import Dict, Union
+
+from apistar import http
 from apistar.exceptions import ConfigurationError
-from apistar.types import Settings
-import jwt
+from apistar.server.components import Component
+
+import jwt as PyJWT
 
 from .exceptions import AuthenticationFailed
+from .utils import get_token_from_header
+
+log = logging.getLogger(__name__)
 
 
-class JWT():
-    def __init__(self, settings: Settings, token=None, issuer=None, audience=None, leeway=None):
-        jwt_settings = settings.get('JWT', {})
-        self.secret = jwt_settings.get('SECRET', None)
-        if self.secret is None:
-            msg = 'The SECRET setting under JWT settings must be defined.'
-            raise ConfigurationError(msg) from None
-        self.algorithms = jwt_settings.get('ALGORITHMS', ['HS256'])
+class JWTUser:
+    slots = ('id', 'username', 'token')
+
+    def __init__(self, id, username, token):
+        self.id = id
+        self.username = username
         self.token = token
-        self.issuer = issuer if issuer is not None else jwt_settings.get('ISSUER', None)
-        self.audience = audience if audience is not None else jwt_settings.get('AUDIENCE', None)
-        self.leeway = leeway if leeway is not None else jwt_settings.get('LEEWAY', None)
-        try:
-            kwargs = {}
-            if self.issuer:
-                kwargs.update({'issuer': self.issuer})
-            if self.audience:
-                kwargs.update({'audience': self.audience})
-            if self.leeway:
-                kwargs.update({'leeway': self.leeway})
-            self.payload = jwt.decode(
-                self.token, self.secret, algorithms=self.algorithms, **kwargs)
-        except Exception:
-            self.payload = None
-            raise AuthenticationFailed()
 
-    @staticmethod
-    def encode(payload, secret=None, algorithm=None, **kwargs):
-        if secret is None:
-            msg = 'The secret keyword argument must be defined.'
-            raise ConfigurationError(msg) from None
-        algorithm = 'HS256' if algorithm is None else algorithm
+
+class _JWT:
+    slots = ('ID', 'USERNAME', 'algorithms', 'options', 'secret')
+
+    def __init__(self, settings: Dict):
+        self.ID = settings.get('JWT_USER_ID')
+        self.USERNAME = settings.get('JWT_USER_NAME')
+        self.algorithms = settings.get('JWT_ALGORITHMS')
+        self.options = settings.get('options')
+        self.secret = settings.get('JWT_SECRET')
+
+    def encode(payload, algorithm=None, **kwargs):
+        algorithm = algorithm if algorithm else self.algorithms[0]
         try:
             token = jwt.encode(
-                payload, secret, algorithm=algorithm, **kwargs).decode(encoding='UTF-8')
+                payload, secret, algorithm=algorithm, **self.options).decode(encoding='UTF-8')
         except Exception as exc:
-            raise ConfigurationError(exc.__class__.__name__) from None
+            log.warn(exc.__class__.__name__)
+            return None
         return token
+
+    def decode(token):
+        try:
+            payload = PyJWT.decode(token, self.secret, algorithms=self.algorithms, **self.options)
+            if payload == {}:
+                return None
+        except Exception:
+            raise AuthenticationFailed()
+        id = payload.get(self.ID)
+        username = payload.get(self.USERNAME)
+        return JWTUser(id=id, username=username, token=payload)
+
+
+class JWT(Component):
+    slots = ('settings')
+
+    def __init__(self, settings: Dict=None):
+        def get(setting, default=None):
+            return settings.get(setting, os.environ.get(setting, default))
+        self.settings = {
+            'USER_ID': get('JWT_USER_ID', 'id'),
+            'USER_NAME': get('JWT_USER_NAME', 'username'),
+            'options': get('JWT_OPTIONS'),
+            'secret': get('JWT_SECRET'),
+        }
+        if self.settings['secret'] is None:
+            self._raise_setup_error()
+        if not hasattr(self.settings['options'], 'JWT_ALGORITHMS'):
+            self.settings['options']['JWT_ALGORITHMS'] = ['HS256']
+
+    def _raise_setup_error(self):
+        msg = ('JWT_SECRET must be defined as an environment variable or passed as part of'
+               ' settings on instantiation.'
+               ' See https://github.com/audiolion/apistar-jwt#Setup')
+        raise ConfigurationError(msg)
+
+    def resolve(self, authorization: http.Header) -> Union[_JWT, JWTUser]:
+        jwt = _JWT(self.settings)
+        if authorization is None:
+            return jwt
+        token = get_token_from_header(authorization)
+        jwt_user = jwt.decode(token)
+        return jwt_user
+
+    def can_handle_parameter(self, parameter: inspect.Parameter):
+        return parameter.annotation is JWT or parameter.annotation is JWTUser
