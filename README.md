@@ -5,6 +5,10 @@
 
 JSON Web Token Component for use with API Star. Provides JWTAuthenticate class for JWT Authentication.
 
+## WARNING!
+
+This version of `apistar-jwt` is only compatible with `apistar<0.4`.
+
 
 ## Installation
 
