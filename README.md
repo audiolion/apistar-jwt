@@ -8,7 +8,7 @@ JSON Web Token Component for use with *API Star >= 0.4*.
 ## Installation
 
 ```
-$ pipenv install apistar-jwt
+$ pip install apistar-jwt
 ```
 
 Alternatively, install through [pipenv](https://pipenv.readthedocs.io/en/latest/).
