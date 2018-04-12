@@ -48,8 +48,15 @@ class _JWT:
             payload = PyJWT.decode(token, self.secret, algorithms=self.algorithms, **self.options)
             if payload == {}:
                 return None
-        except Exception:
-            raise AuthenticationFailed()
+        except PyJWT.MissingRequiredClaimError as ex:
+            log.warning('JWT Missing claim: %s', ex.claim)
+            return None
+        except PyJWT.InvalidTokenError as ex:
+            log.exception('JWT Invalid Token: %s', ex.__class__.__name__)
+            return None
+        except Exception as exc:
+            log.exception('JWT Exception: %s', ex.__class__.__name__)
+            return None
         id = payload.get(self.ID)
         username = payload.get(self.USERNAME)
         return JWTUser(id=id, username=username, token=payload)
@@ -84,6 +91,8 @@ class JWT(Component):
             return jwt
         token = get_token_from_header(authorization)
         jwt_user = jwt.decode(token)
+        if jwt_user is None:
+            raise AuthenticationFailed()
         return jwt_user
 
     def can_handle_parameter(self, parameter: inspect.Parameter):
