@@ -1,11 +1,7 @@
 import os
 
-from apistar import App, Route, exceptions, http
-from apistar.frameworks.wsgi import WSGIApp as App
-
-from apistar_jwt.token import JWT JWTUser
-
-import datetime
+from apistar import App, Route, exceptions, http, types, validators
+from apistar_jwt.token import JWT, JWTUser
 
 
 # Fake user database
@@ -18,20 +14,17 @@ class UserData(types.Type):
 
 
 def welcome(user: JWTUser) -> dict:
-    return {
-        'message': f'Welcome {user.username}#{user.id}, your login expires at {user.token['exp']}',
-    }
+    message = f'Welcome {user.username}#{user.id}, your login expires at {user.token["exp"]}'
+    return {'message': message}
 
 
-# we override the default Authentication and Permissions policy to allow login
-@annotate(authentication=[], permissions=[])
-def login(user: UserData, jwt: JWT) -> dict:
+def login(data: UserData, jwt: JWT) -> dict:
     # do some check with your database here to see if the user is authenticated
-    if user.email != USERS_DB['email'] or user.password != USERS_DB['password']:
+    if data.email != USERS_DB['email'] or data.password != USERS_DB['password']:
         raise exceptions.Forbidden('Incorrect username or password.')
     payload = {
-        'id': user.id,
-        'username': user.email,
+        'id': USERS_DB['id'],
+        'username': USERS_DB['email'],
         'iat': datetime.datetime.utcnow(),
         'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)  # ends in 60 minutes
     }
@@ -49,19 +42,11 @@ routes = [
 
 components = [
     JWT({
-        'JWT_USER_ID': 'id',
-        'JWT_USER_NAME': 'email',
-        'JWT_ALGORITHMS': ['HS256'],
         'JWT_SECRET': 'BZz4bHXYQD?g9YN2UksRn7*r3P(eo]P,Rt8NCWKs6VP34qmTL#8f&ruD^TtG',
-        'JWT_OPTIONS': {
-            'issuer': 'urn:foo',
-            'audience': 'urn:bar',
-            'leeway': 10,
-        },
     }),
 ]
 
 app = App(routes=routes, components=components)
 
 if __name__ == '__main__':
-    app.main()
+    app.serve('127.0.0.1', 8080, use_debugger=True, use_reloader=True)
