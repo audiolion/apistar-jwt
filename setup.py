@@ -31,6 +31,7 @@ setup(
     version='0.3.1',
     description="A JSON Web Token Component for API Star",
     long_description=readme + '\n\n' + history,
+    long_description_content_type='text/markdown',
     author="Ryan Castner",
     author_email='castner.rr@gmail.com',
     url='https://github.com/audiolion/apistar-jwt',

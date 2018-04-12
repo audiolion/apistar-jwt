@@ -59,8 +59,8 @@ coverage: ## check code coverage quickly with the default Python
 	$(BROWSER) htmlcov/index.html
 
 release: clean ## package and upload a release
-	pipenv run python setup.py sdist upload
-	pipenv run python setup.py bdist_wheel upload
+	pipenv run python setup.py sdist bdist_wheel
+	pipenv run twine upload dist/*
 
 dist: clean ## builds source and wheel package
 	pipenv run python setup.py sdist
