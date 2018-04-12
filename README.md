@@ -144,6 +144,7 @@ components = [
       'issuer': 'urn:foo',
       'audience': 'urn:bar',
       'leeway': 10,
+    },
   })
 ]
 ```
@@ -155,6 +156,26 @@ Quick rundown of the options:
 `issuer` is the urn of the application that issues the token, it must match a value in the `iss` key of the payload. [Read more about the issuer claim](https://pyjwt.readthedocs.io/en/latest/usage.html#issuer-claim-iss)
 
 `leeway` is the number of seconds of margin an expiration time claim in the past will still be valid for.
+
+A fully customized `JWT` component would like like the following:
+
+```python
+from apistar_jwt.token import JWT
+
+components = [
+  JWT({
+    'JWT_ALGORITHMS': ['HS256', 'RSA512'],
+    'JWT_USER_ID': 'pk',
+    'JWT_USER_NAME': 'email',
+    'JWT_SECRET': 'QXp4Z83.%2F@JBiaPZ8T9YDwoasn[dn)cZ=fE}KqHMJPNka3QyPNq^KnMqL$oCsU9BC?.f9,oF2.2t4oN?[g%iq89(+',
+    'JWT_OPTIONS': {
+      'issuer': 'urn:foo',
+      'audience': 'urn:bar',
+      'leeway': 10,
+    },
+  })
+]
+```
 
 ## Developing
 
