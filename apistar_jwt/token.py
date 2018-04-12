@@ -1,3 +1,4 @@
+import inspect
 import logging
 import os
 from typing import Dict, Union
@@ -27,35 +28,35 @@ class _JWT:
     slots = ('ID', 'USERNAME', 'algorithms', 'options', 'secret')
 
     def __init__(self, settings: Dict):
-        self.ID = settings.get('JWT_USER_ID')
-        self.USERNAME = settings.get('JWT_USER_NAME')
-        self.algorithms = settings.get('JWT_ALGORITHMS')
+        self.ID = settings.get('user_id')
+        self.USERNAME = settings.get('user_name')
+        self.algorithms = settings.get('algorithms')
         self.options = settings.get('options')
-        self.secret = settings.get('JWT_SECRET')
+        self.secret = settings.get('secret')
 
-    def encode(payload, algorithm=None, **kwargs):
+    def encode(self, payload, algorithm=None, **kwargs):
         algorithm = algorithm if algorithm else self.algorithms[0]
         try:
-            token = jwt.encode(
-                payload, secret, algorithm=algorithm, **self.options).decode(encoding='UTF-8')
+            token = PyJWT.encode(
+                payload, self.secret, algorithm=algorithm).decode(encoding='UTF-8')
         except Exception as exc:
             log.warn(exc.__class__.__name__)
             return None
         return token
 
-    def decode(token):
+    def decode(self, token):
         try:
             payload = PyJWT.decode(token, self.secret, algorithms=self.algorithms, **self.options)
             if payload == {}:
                 return None
-        except PyJWT.MissingRequiredClaimError as ex:
-            log.warning('JWT Missing claim: %s', ex.claim)
+        except PyJWT.MissingRequiredClaimError as exc:
+            log.warning('JWT Missing claim: %s', exc.claim)
             return None
-        except PyJWT.InvalidTokenError as ex:
-            log.exception('JWT Invalid Token: %s', ex.__class__.__name__)
+        except PyJWT.InvalidTokenError as exc:
+            log.exception('JWT Invalid Token: %s', exc.__class__.__name__)
             return None
         except Exception as exc:
-            log.exception('JWT Exception: %s', ex.__class__.__name__)
+            log.exception('JWT Exception: %s', exc.__class__.__name__)
             return None
         id = payload.get(self.ID)
         username = payload.get(self.USERNAME)
@@ -69,15 +70,14 @@ class JWT(Component):
         def get(setting, default=None):
             return settings.get(setting, os.environ.get(setting, default))
         self.settings = {
-            'USER_ID': get('JWT_USER_ID', 'id'),
-            'USER_NAME': get('JWT_USER_NAME', 'username'),
-            'options': get('JWT_OPTIONS'),
+            'user_id': get('JWT_USER_ID', 'id'),
+            'user_name': get('JWT_USER_NAME', 'username'),
+            'algorithms': get('JWT_ALGORITHMS', ['HS256']),
+            'options': get('JWT_OPTIONS', {}),
             'secret': get('JWT_SECRET'),
         }
         if self.settings['secret'] is None:
             self._raise_setup_error()
-        if not hasattr(self.settings['options'], 'JWT_ALGORITHMS'):
-            self.settings['options']['JWT_ALGORITHMS'] = ['HS256']
 
     def _raise_setup_error(self):
         msg = ('JWT_SECRET must be defined as an environment variable or passed as part of'
@@ -85,9 +85,9 @@ class JWT(Component):
                ' See https://github.com/audiolion/apistar-jwt#Setup')
         raise ConfigurationError(msg)
 
-    def resolve(self, authorization: http.Header) -> Union[_JWT, JWTUser]:
+    def resolve(self, authorization: http.Header, parameter: inspect.Parameter) -> Union[_JWT, JWTUser]:
         jwt = _JWT(self.settings)
-        if authorization is None:
+        if parameter.annotation is JWT:
             return jwt
         token = get_token_from_header(authorization)
         jwt_user = jwt.decode(token)
