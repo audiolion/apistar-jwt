@@ -1,64 +1,52 @@
-from apistar import annotate, Include, Route
-from apistar.exceptions import Forbidden
-from apistar.frameworks.wsgi import WSGIApp as App
-from apistar.handlers import docs_urls, static_urls
-from apistar.permissions import IsAuthenticated
-from apistar.types import Settings
+import os
 
-from apistar_jwt.authentication import JWTAuthentication
-from apistar_jwt.token import JWT
-
-import datetime
-
-
-def welcome(name=None):
-    if name is None:
-        return {'message': 'Welcome to API Star!'}
-    return {'message': 'Welcome to API Star, %s!' % name}
+from apistar import App, Route, exceptions, http, types, validators
+from apistar_jwt.token import JWT, JWTUser
 
 
 # Fake user database
-USER = {'user': 'test', 'pwd': 'pwd'}
+USERS_DB = {'id': 1, 'email': 'user@example.com', 'password': 'password'}
 
 
-# we override the default Authentication and Permissions policy to allow login
-@annotate(authentication=[], permissions=[])
-def login(user: str, pwd: str, settings: Settings) -> dict:
+class UserData(types.Type):
+    email = validators.String()
+    password = validators.String()
+
+
+def welcome(user: JWTUser) -> dict:
+    message = f'Welcome {user.username}#{user.id}, your login expires at {user.token["exp"]}'
+    return {'message': message}
+
+
+def login(data: UserData, jwt: JWT) -> dict:
     # do some check with your database here to see if the user is authenticated
-    if user != USER['user'] or pwd != USER['pwd']:
-        raise Forbidden('invalid credentials')
-    SECRET = settings['JWT'].get('SECRET')
+    if data.email != USERS_DB['email'] or data.password != USERS_DB['password']:
+        raise exceptions.Forbidden('Incorrect username or password.')
     payload = {
-        'username': user,
+        'id': USERS_DB['id'],
+        'username': USERS_DB['email'],
         'iat': datetime.datetime.utcnow(),
-        'exp': datetime.datetime.utcnow() +
-        datetime.timedelta(minutes=60)  #  ends in 60 minutes
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)  # ends in 60 minutes
     }
-    token = JWT.encode(payload, secret=SECRET)
+    token = jwt.encode(payload)
+    if token is None:
+        # encoding failed, handle error
+        raise exceptions.BadRequest()
     return {'token': token}
 
 
 routes = [
-    Route('/', 'GET', welcome),
-    Route('/login/', 'GET', login),
-    Include('/docs', docs_urls),
-    Include('/static', static_urls)
+    Route('/', method='GET', handler=welcome),
+    Route('/login', method='POST', handler=login),
 ]
 
-settings = {
-    'AUTHENTICATION': [
-        JWTAuthentication(),
-    ],
-    'PERMISSIONS': [
-        IsAuthenticated,
-    ],
-    'JWT': {
-        'SECRET':
-        'QXp4Z83.%2F@JBiaPZ8T9YDwoasn[dn)cZ=fE}KqHMJPNka3QyPNq^KnMqL$oCsU9BC?.f9,oF2.2t4oN?[g%iq89(+'
-    }
-}
+components = [
+    JWT({
+        'JWT_SECRET': 'BZz4bHXYQD?g9YN2UksRn7*r3P(eo]P,Rt8NCWKs6VP34qmTL#8f&ruD^TtG',
+    }),
+]
 
-app = App(routes=routes, settings=settings)
+app = App(routes=routes, components=components)
 
 if __name__ == '__main__':
-    app.main()
+    app.serve('127.0.0.1', 8080, use_debugger=True, use_reloader=True)

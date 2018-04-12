@@ -12,7 +12,7 @@ with open('HISTORY.md') as history_file:
     history = history_file.read()
 
 requirements = [
-    'apistar>=0.3,<0.4',
+    'apistar>=0.4',
     'PyJWT',
 ]
 
