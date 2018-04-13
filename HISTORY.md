@@ -1,5 +1,11 @@
 # HISTORY
 
+## 0.4.1
+
+* Added decorator support, `@anonymous_allowed` and `@authentication_required`
+* Added back in test suite
+* Updated typings and fixed a bug with instantiating `JWT` component
+
 ## 0.4.0 ** BREAKING CHANGE **
 
 Apistar JWT updated to support Apistar >= 0.4. Pin to 0.3.3 for Apistar 0.3.x support
