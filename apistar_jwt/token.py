@@ -1,9 +1,9 @@
 import inspect
 import logging
 import os
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 
-from apistar import http
+from apistar import http, Route
 from apistar.exceptions import ConfigurationError
 from apistar.server.components import Component
 
@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 class JWTUser:
     slots = ('id', 'username', 'token')
 
-    def __init__(self, id, username, token):
+    def __init__(self, id, username, token) -> None:
         self.id = id
         self.username = username
         self.token = token
@@ -27,14 +27,14 @@ class JWTUser:
 class _JWT:
     slots = ('ID', 'USERNAME', 'algorithms', 'options', 'secret')
 
-    def __init__(self, settings: Dict):
+    def __init__(self, settings: Dict) -> None:
         self.ID = settings.get('user_id')
         self.USERNAME = settings.get('user_name')
         self.algorithms = settings.get('algorithms')
         self.options = settings.get('options')
         self.secret = settings.get('secret')
 
-    def encode(self, payload, algorithm=None, **kwargs):
+    def encode(self, payload, algorithm=None, **kwargs) -> str:
         algorithm = algorithm if algorithm else self.algorithms[0]
         try:
             token = PyJWT.encode(
@@ -44,7 +44,7 @@ class _JWT:
             return None
         return token
 
-    def decode(self, token):
+    def decode(self, token) -> Optional[JWTUser]:
         try:
             payload = PyJWT.decode(token, self.secret, algorithms=self.algorithms, **self.options)
             if payload == {}:
@@ -66,9 +66,10 @@ class _JWT:
 class JWT(Component):
     slots = ('settings')
 
-    def __init__(self, settings: Dict=None):
+    def __init__(self, settings: Dict=None) -> None:
         def get(setting, default=None):
             return settings.get(setting, os.environ.get(setting, default))
+        settings = settings if settings else {}
         self.settings = {
             'user_id': get('JWT_USER_ID', 'id'),
             'user_name': get('JWT_USER_NAME', 'username'),
@@ -85,15 +86,19 @@ class JWT(Component):
                ' See https://github.com/audiolion/apistar-jwt#Setup')
         raise ConfigurationError(msg)
 
-    def resolve(self, authorization: http.Header, parameter: inspect.Parameter) -> Union[_JWT, JWTUser]:
+    def resolve(self, authorization: http.Header, route: Route, parameter: inspect.Parameter
+                ) -> Union[_JWT, JWTUser, None]:
+        authentication_required = getattr(route.handler, 'authenticated', True)
         jwt = _JWT(self.settings)
         if parameter.annotation is JWT:
             return jwt
+        if authorization is None and not authentication_required:
+            return None
         token = get_token_from_header(authorization)
         jwt_user = jwt.decode(token)
         if jwt_user is None:
             raise AuthenticationFailed()
         return jwt_user
 
-    def can_handle_parameter(self, parameter: inspect.Parameter):
+    def can_handle_parameter(self, parameter: inspect.Parameter) -> bool:
         return parameter.annotation is JWT or parameter.annotation is JWTUser

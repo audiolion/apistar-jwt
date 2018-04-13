@@ -85,6 +85,29 @@ Requests made with JWT The token must be passed as an `Authorization` header usi
 $ curl -i -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxfQ.fCqeAJGHYwZ9y-hJ3CKUWPiENOM0xtGsMeUWmIq4o8Q" http://localhost:8080/some-resource-requiring-jwt-auth
 ```
 
+### Decorators
+
+We provide two decorators for convenience to enforce authentication required or allow anonymous users for a route:
+
+```python
+from apistar_jwt.token import JWTUser
+from apistar_jwt.decorators import anonymous_allowed, authentication_required
+
+
+@authentication_required
+def auth_required(request: http.Request, user: JWTUser):
+    return user.__dict__
+
+
+@anonymous_allowed
+def anon_allowed(request: http.Request, user: JWTUser):
+    if user:
+        return user.__dict__
+    return None
+```
+
+The `@authentication_required` decorator will enforce the user to be logged in for that route. Meanwhile the `@anonymous_allowed` will set `user: JWTUser=None` and allow anonymous users to hit the route. The default behavior is `@authentication_required` so you do not need to annotate with this decorator, it is just to help your code be explicit.
+
 ## Settings
 
 There are two settings this package uses to identify the `username` and `user_id` keys in the JWT payload, they are by default:
