@@ -67,9 +67,9 @@ class JWT(Component):
     slots = ('settings')
 
     def __init__(self, settings: Dict=None) -> None:
-        settings = settings if settings else {}
         def get(setting, default=None):
             return settings.get(setting, os.environ.get(setting, default))
+        settings = settings if settings else {}
         self.settings = {
             'user_id': get('JWT_USER_ID', 'id'),
             'user_name': get('JWT_USER_NAME', 'username'),
@@ -86,7 +86,8 @@ class JWT(Component):
                ' See https://github.com/audiolion/apistar-jwt#Setup')
         raise ConfigurationError(msg)
 
-    def resolve(self, authorization: http.Header, route: Route, parameter: inspect.Parameter) -> Union[_JWT, JWTUser, None]:
+    def resolve(self, authorization: http.Header, route: Route, parameter: inspect.Parameter
+                ) -> Union[_JWT, JWTUser, None]:
         authentication_required = getattr(route.handler, 'authenticated', True)
         jwt = _JWT(self.settings)
         if parameter.annotation is JWT:

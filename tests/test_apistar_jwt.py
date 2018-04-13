@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 from apistar import Route, exceptions, http
 from apistar.test import TestClient
 from apistar.server.app import App, ASyncApp
-from apistar.server.components import Component
 from apistar_jwt.token import JWT, JWTUser
 from apistar_jwt.decorators import authentication_required, anonymous_allowed
 
@@ -27,7 +26,7 @@ def anon_allowed(request: http.Request, user: JWTUser):
 
 def test_configuration_error() -> None:
     with pytest.raises(exceptions.ConfigurationError):
-        components = [JWT()]
+        JWT()
 
 
 @pytest.mark.parametrize('app_class', [App, ASyncApp])
@@ -103,7 +102,7 @@ def test_jwt_anon_allowed(app_class) -> None:
 
     response = client.get('/anonymous-allowed')
     assert response.status_code == 200
-    assert response.json() == None
+    assert response.json() is None
 
     # client is trying to authenticate, so not anonymous
     response = client.get('/anonymous-allowed', headers={
