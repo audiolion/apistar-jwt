@@ -58,9 +58,9 @@ class _JWT:
         except Exception as exc:
             log.exception('JWT Exception: %s', exc.__class__.__name__)
             return None
-        id = payload.get(self.ID)
+        _id = payload.get(self.ID)
         username = payload.get(self.USERNAME)
-        return JWTUser(id=id, username=username, token=payload)
+        return JWTUser(id=_id, username=username, token=payload)
 
 
 class JWT(Component):
