@@ -1,5 +1,9 @@
 # HISTORY
 
+## 0.4.2
+
+* Everything is now a top level export as well, e.g. `from apistar_jwt import JWT` (thanks @jgiradet)
+
 ## 0.4.1
 
 * Added decorator support, `@anonymous_allowed` and `@authentication_required`
