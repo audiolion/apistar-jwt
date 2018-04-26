@@ -305,3 +305,28 @@ def test_jwt_leeway_claim(app_class) -> None:
         'Authorization': 'Bearer {token}'.format(token=encoded_jwt),
     })
     assert response.status_code == 200
+
+@pytest.mark.parametrize("app_class", [App, ASyncApp])
+def test_jwt_white_list(app_class) -> None:
+    secret = "jwt-secret"
+
+    class IsAuthenticated:
+
+        def on_request(self, jwt_user: JWTUser) -> None:
+            """ just force authentication for each request"""
+
+    components = [JWT({"JWT_SECRET": secret})]
+
+    app = app_class(routes=[], components=components, event_hooks=[IsAuthenticated])
+    client = TestClient(app)
+
+    r = client.get("/schema/")
+    assert r.json() == "Authorization header is missing."
+    assert r.status_code == 401
+
+    components = [JWT({"JWT_SECRET": secret, "JWT_WHITE_LIST": ["serve_schema"]})]
+
+    app = app_class(routes=[], components=components, event_hooks=[IsAuthenticated])
+    client = TestClient(app)
+    r = client.get("/schema/")
+    assert r.status_code == 200
