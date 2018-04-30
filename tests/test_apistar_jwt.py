@@ -306,6 +306,7 @@ def test_jwt_leeway_claim(app_class) -> None:
     })
     assert response.status_code == 200
 
+
 @pytest.mark.parametrize("app_class", [App, ASyncApp])
 def test_jwt_white_list(app_class) -> None:
     secret = "jwt-secret"
