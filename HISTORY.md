@@ -1,5 +1,10 @@
 # HISTORY
 
+## 0.5.0
+
+* Add `JWT_WHITE_LIST` setting for whitelisting handlers (thanks @jgiradet)
+* Verify apistar 0.5.x support
+
 ## 0.4.2
 
 * Everything is now a top level export as well, e.g. `from apistar_jwt import JWT` (thanks @jgiradet)
