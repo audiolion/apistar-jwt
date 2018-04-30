@@ -132,7 +132,21 @@ components = [
 ]
 ```
 
-`ALGORITHMS` is related to the algorithms used for decoding JWTs. By default we only use 'HS256' but JWT supports passing an array of [supported algorithms](https://pyjwt.readthedocs.io/en/latest/algorithms.html#digital-signature-algorithms) which it will sequentially try when attempting to decode.
+`JWT_WHITE_LIST` allows you to specify a list of route functions that will not require JWT authentication. This is useful if you have setup a default authentication policy but want to open up certain routes, especially ones that might be in third party packages or in apistar itself like the schema docs.
+
+```python
+from apistar_jwt.token import JWT
+
+components = [
+  JWT({
+    'JWT_WHITE_LIST': ['serve_schema', 'home'],
+  })
+]
+```
+
+In this instance, the `serve_schema` and `home` Routes will not require JWT authentication.
+
+`JWT_ALGORITHMS` is related to the algorithms used for decoding JWTs. By default we only use 'HS256' but JWT supports passing an array of [supported algorithms](https://pyjwt.readthedocs.io/en/latest/algorithms.html#digital-signature-algorithms) which it will sequentially try when attempting to decode.
 
 ```python
 from apistar_jwt.token import JWT
@@ -144,7 +158,7 @@ components = [
 ]
 ```
 
-`SECRET` is a long, randomized, secret key that should never be checked into version control.
+`JWT_SECRET` is a long, randomized, secret key that should never be checked into version control.
 
 ```python
 from apistar_jwt.token import JWT
@@ -196,6 +210,7 @@ components = [
       'audience': 'urn:bar',
       'leeway': 10,
     },
+    'JWT_WHITE_LIST': ['serve_schema'],
   })
 ]
 ```
