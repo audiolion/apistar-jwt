@@ -76,6 +76,7 @@ class JWT(Component):
             'algorithms': get('JWT_ALGORITHMS', ['HS256']),
             'options': get('JWT_OPTIONS', {}),
             'secret': get('JWT_SECRET'),
+            "white_list": get("JWT_WHITE_LIST", []),
         }
         if self.settings['secret'] is None:
             self._raise_setup_error()
@@ -92,6 +93,8 @@ class JWT(Component):
         jwt = _JWT(self.settings)
         if parameter.annotation is JWT:
             return jwt
+        if route.handler.__name__ in self.settings["white_list"]:
+            return None
         if authorization is None and not authentication_required:
             return None
         token = get_token_from_header(authorization)
