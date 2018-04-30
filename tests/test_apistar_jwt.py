@@ -318,7 +318,7 @@ def test_jwt_white_list(app_class) -> None:
 
     components = [JWT({"JWT_SECRET": secret})]
 
-    app = app_class(routes=[], components=components, event_hooks=[IsAuthenticated])
+    app = app_class(routes=[], components=components, event_hooks=[IsAuthenticated()])
     client = TestClient(app)
 
     r = client.get("/schema/")
@@ -327,7 +327,7 @@ def test_jwt_white_list(app_class) -> None:
 
     components = [JWT({"JWT_SECRET": secret, "JWT_WHITE_LIST": ["serve_schema"]})]
 
-    app = app_class(routes=[], components=components, event_hooks=[IsAuthenticated])
+    app = app_class(routes=[], components=components, event_hooks=[IsAuthenticated()])
     client = TestClient(app)
     r = client.get("/schema/")
     assert r.status_code == 200
