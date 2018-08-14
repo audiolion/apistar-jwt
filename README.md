@@ -158,6 +158,18 @@ components = [
 ]
 ```
 
+`JWT_AUTHORIZATION_PREFIX` is the string that comes before the token in the Authorization header. Defaults to 'bearer' (the header is not case sensitive)
+
+```python
+from apistar_jwt.token import JWT
+
+components = [
+  JWT({
+    'JWT_AUTHORIZATION_PREFIX': 'jwt'
+  })
+]
+```
+
 `JWT_SECRET` is a long, randomized, secret key that should never be checked into version control.
 
 ```python

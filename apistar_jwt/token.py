@@ -76,7 +76,8 @@ class JWT(Component):
             'algorithms': get('JWT_ALGORITHMS', ['HS256']),
             'options': get('JWT_OPTIONS', {}),
             'secret': get('JWT_SECRET'),
-            "white_list": get("JWT_WHITE_LIST", []),
+            'white_list': get('JWT_WHITE_LIST', []),
+            'authorization_prefix': get('JWT_AUTHORIZATION_PREFIX', 'bearer'),
         }
         if self.settings['secret'] is None:
             self._raise_setup_error()
@@ -97,7 +98,7 @@ class JWT(Component):
             return None
         if authorization is None and not authentication_required:
             return None
-        token = get_token_from_header(authorization)
+        token = get_token_from_header(authorization, self.settings['authorization_prefix'])
         jwt_user = jwt.decode(token)
         if jwt_user is None:
             raise AuthenticationFailed()

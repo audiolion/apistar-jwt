@@ -331,3 +331,42 @@ def test_jwt_white_list(app_class) -> None:
     client = TestClient(app)
     r = client.get("/schema/")
     assert r.status_code == 200
+
+
+@pytest.mark.parametrize("app_class", [App, ASyncApp])
+def test_jwt_authorization_prefix(app_class) -> None:
+    secret = 'jwt-secret'
+    routes = [
+        Route('/auth-required', 'GET', auth_required),
+    ]
+
+    components = [JWT({'JWT_SECRET': secret, 'JWT_AUTHORIZATION_PREFIX': 'jwt'})]
+    app = app_class(routes=routes, components=components)
+    client = TestClient(app)
+
+    response = client.get('/auth-required')
+    assert response.status_code == 401
+
+    response = client.get('/auth-required', headers={
+        'Authorization': 'Bearer',
+    })
+    assert response.status_code == 401
+
+    response = client.get('/auth-required', headers={
+        'Authorization': 'Basic username',
+    })
+    assert response.status_code == 401
+
+    payload = {'id': 1, 'username': 'bailey'}
+
+    encoded_jwt = jwt.encode(payload, secret, algorithm='HS256').decode(encoding='UTF-8')
+
+    response = client.get('/auth-required', headers={
+        'Authorization': 'JWT {token}'.format(token=encoded_jwt),
+    })
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data['id'] == payload['id']
+    assert data['username'] == payload['username']
+    assert data['token'] == payload
