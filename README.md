@@ -158,7 +158,7 @@ components = [
 ]
 ```
 
-`JWT_AUTHORIZATION_PREFIX` is the string that comes before the token in the Authorization header. Defaults to 'bearer' (Does not case sensitive)
+`JWT_AUTHORIZATION_PREFIX` is the string that comes before the token in the Authorization header. Defaults to 'bearer' (the header is not case sensitive)
 
 ```python
 from apistar_jwt.token import JWT
