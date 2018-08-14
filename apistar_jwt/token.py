@@ -76,7 +76,7 @@ class JWT(Component):
             'algorithms': get('JWT_ALGORITHMS', ['HS256']),
             'options': get('JWT_OPTIONS', {}),
             'secret': get('JWT_SECRET'),
-            "white_list": get("JWT_WHITE_LIST", []),
+            'white_list': get('JWT_WHITE_LIST', []),
             'authorization_prefix': get('JWT_AUTHORIZATION_PREFIX', 'bearer'),
         }
         if self.settings['secret'] is None:
