@@ -2,8 +2,13 @@
 
 [![pypi](https://img.shields.io/pypi/v/apistar_jwt.svg)](https://pypi.org/project/apistar-jwt) [![travis](https://img.shields.io/travis/audiolion/apistar-jwt.svg)](https://travis-ci.org/audiolion/apistar_jwt) [![codecov](https://codecov.io/gh/audiolion/apistar-jwt/branch/master/graph/badge.svg)](https://codecov.io/gh/audiolion/apistar-jwt)
 
+## NOTICE
 
-JSON Web Token Component for use with *API Star >= 0.4*.
+API Star gutted a lot of functionality to go a different path. As a result, this library will be obsolete. I don't intend to continue to maintain it.
+
+If you liked the spirit of API Star, I would recommend checking out [Molten](https://moltenframework.com/) and [Molten JWT](https://github.com/androiddrew/molten-jwt).
+
+JSON Web Token Component for use with *API Star 0.4 <= x < 0.6.
 
 ## Installation
 
